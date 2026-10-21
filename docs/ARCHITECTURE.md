@@ -60,7 +60,7 @@ track, and 1.5 ms for 64 tracks (23 µs each). A one-track HTTP request costs ab
 mostly HTTP, JSON and validation. So batching concurrent single-track requests changes little,
 and the batcher is opportunistic: it merges whatever is already queued, never waits.
 Batching pays for **bulk scoring**: one request with 64 tracks reaches 4,594 tracks/s per pod, about
-10× cheaper per prediction than one-track requests. Catalogue re-scoring should use that path.
+9× cheaper per prediction than one-track requests. Catalogue re-scoring should use that path.
 
 **int8 for size, not speed.** Dynamic quantisation makes the track model four times smaller
 (13.3 → 3.3 MB) with the same recall (0.3399 vs 0.3396). It is *not* faster for one track
