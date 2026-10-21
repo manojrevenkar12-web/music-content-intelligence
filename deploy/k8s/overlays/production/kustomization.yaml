@@ -1,0 +1,15 @@
+# Production shape: more headroom, pinned image digest set by the release pipeline.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: [../../base]
+patches:
+  - target: {kind: HorizontalPodAutoscaler, name: api}
+    patch: |
+      - {op: replace, path: /spec/minReplicas, value: 3}
+      - {op: replace, path: /spec/maxReplicas, value: 30}
+  - target: {kind: Deployment, name: learner}
+    patch: |
+      - {op: replace, path: /spec/replicas, value: 2}
+  - target: {kind: PodDisruptionBudget, name: api}
+    patch: |
+      - {op: replace, path: /spec/minAvailable, value: 2}

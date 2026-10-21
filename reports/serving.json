@@ -1,0 +1,155 @@
+{
+  "machine": "2 vCPU cloud container; server: 1 uvicorn worker, 1 ONNX thread (one pod); load generator on the same host",
+  "model": "mci-20261021-1738",
+  "engine": {
+    "int8": {
+      "1": {
+        "ms_per_call": 0.113,
+        "us_per_track": 112.8
+      },
+      "8": {
+        "ms_per_call": 0.345,
+        "us_per_track": 43.2
+      },
+      "32": {
+        "ms_per_call": 0.852,
+        "us_per_track": 26.6
+      },
+      "64": {
+        "ms_per_call": 1.469,
+        "us_per_track": 23.0
+      },
+      "256": {
+        "ms_per_call": 5.733,
+        "us_per_track": 22.4
+      }
+    },
+    "fp32": {
+      "1": {
+        "ms_per_call": 0.112,
+        "us_per_track": 111.5
+      },
+      "8": {
+        "ms_per_call": 0.404,
+        "us_per_track": 50.5
+      },
+      "32": {
+        "ms_per_call": 1.179,
+        "us_per_track": 36.9
+      },
+      "64": {
+        "ms_per_call": 1.902,
+        "us_per_track": 29.7
+      },
+      "256": {
+        "ms_per_call": 6.092,
+        "us_per_track": 23.8
+      }
+    }
+  },
+  "api": {
+    "saturation: int8, no batching": {
+      "users": 32,
+      "tracks_per_request": 1,
+      "throughput_rps": 292.1,
+      "tracks_per_second": 292.1,
+      "latency_ms": {
+        "p50": 65.87,
+        "p95": 339.0,
+        "p99": 530.17
+      },
+      "errors": {},
+      "cost": {
+        "assumed_vcpu_hour_usd": 0.04,
+        "vcpus": 1.0,
+        "usd_per_million_predictions": 0.038
+      }
+    },
+    "saturation: int8, opportunistic batching (default)": {
+      "users": 32,
+      "tracks_per_request": 1,
+      "throughput_rps": 323.4,
+      "tracks_per_second": 323.4,
+      "latency_ms": {
+        "p50": 59.89,
+        "p95": 309.27,
+        "p99": 476.35
+      },
+      "errors": {},
+      "cost": {
+        "assumed_vcpu_hour_usd": 0.04,
+        "vcpus": 1.0,
+        "usd_per_million_predictions": 0.0344
+      }
+    },
+    "saturation: int8, 2 ms batching window": {
+      "users": 32,
+      "tracks_per_request": 1,
+      "throughput_rps": 338.6,
+      "tracks_per_second": 338.6,
+      "latency_ms": {
+        "p50": 52.08,
+        "p95": 296.94,
+        "p99": 491.33
+      },
+      "errors": {},
+      "cost": {
+        "assumed_vcpu_hour_usd": 0.04,
+        "vcpus": 1.0,
+        "usd_per_million_predictions": 0.0328
+      }
+    },
+    "saturation: fp32, opportunistic batching": {
+      "users": 32,
+      "tracks_per_request": 1,
+      "throughput_rps": 323.7,
+      "tracks_per_second": 323.7,
+      "latency_ms": {
+        "p50": 59.82,
+        "p95": 304.05,
+        "p99": 476.15
+      },
+      "errors": {},
+      "cost": {
+        "assumed_vcpu_hour_usd": 0.04,
+        "vcpus": 1.0,
+        "usd_per_million_predictions": 0.0343
+      }
+    },
+    "moderate load: int8, default, 4 clients": {
+      "users": 4,
+      "tracks_per_request": 1,
+      "throughput_rps": 506.5,
+      "tracks_per_second": 506.5,
+      "latency_ms": {
+        "p50": 7.49,
+        "p95": 11.9,
+        "p99": 15.52
+      },
+      "errors": {},
+      "cost": {
+        "assumed_vcpu_hour_usd": 0.04,
+        "vcpus": 1.0,
+        "usd_per_million_predictions": 0.0219
+      }
+    },
+    "bulk catalogue scoring: int8, 64 tracks per request, 4 clients": {
+      "users": 4,
+      "tracks_per_request": 64,
+      "throughput_rps": 71.8,
+      "tracks_per_second": 4593.9,
+      "latency_ms": {
+        "p50": 53.7,
+        "p95": 82.73,
+        "p99": 96.72
+      },
+      "errors": {},
+      "cost": {
+        "assumed_vcpu_hour_usd": 0.04,
+        "vcpus": 1.0,
+        "usd_per_million_predictions": 0.0024
+      }
+    }
+  },
+  "load": "closed-loop clients (each sends its next request when the last is answered), 20 s per configuration"
+}

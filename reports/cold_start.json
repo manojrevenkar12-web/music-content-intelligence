@@ -1,0 +1,32 @@
+{
+  "debut artists": {
+    "tracks": 1800,
+    "model_recall@10": 0.2383,
+    "heuristic_recall@10": 0.177,
+    "gain": 0.0613,
+    "ci95": [
+      0.0382,
+      0.0844
+    ]
+  },
+  "artists with history": {
+    "tracks": 1787,
+    "model_recall@10": 0.4423,
+    "heuristic_recall@10": 0.4092,
+    "gain": 0.0331,
+    "ci95": [
+      0.0095,
+      0.0577
+    ]
+  },
+  "all": {
+    "tracks": 3587,
+    "model_recall@10": 0.3399,
+    "heuristic_recall@10": 0.2927,
+    "gain": 0.0472,
+    "ci95": [
+      0.0307,
+      0.0628
+    ]
+  }
+}

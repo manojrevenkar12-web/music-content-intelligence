@@ -1,0 +1,8 @@
+# CI cluster: one node; the API's NodePort is mapped to localhost:30080 so tests reach it through
+# kube-proxy and the Service's ready endpoints, exactly as rollouts affect real traffic.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - {containerPort: 30080, hostPort: 30080, protocol: TCP}

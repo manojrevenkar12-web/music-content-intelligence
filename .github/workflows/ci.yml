@@ -1,0 +1,85 @@
+name: ci
+on:
+  push: {branches: [main]}
+  pull_request:
+
+concurrency: {group: "${{ github.workflow }}-${{ github.ref }}", cancel-in-progress: true}
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  pipeline:
+    name: lint, tests, training pipeline (quick)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 20
+    env:
+      REDIS_URL: redis://localhost:6379/0
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "${{ env.PYTHON_VERSION }}", cache: pip}
+      - name: Install (PyTorch from the CPU wheel index; the serving image never installs it)
+        run: |
+          pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-dev.txt && pip install --no-deps -e .
+      - run: ruff check src tests scripts && ruff format --check src tests scripts
+      - run: mci fetch
+      - run: pytest -q
+      - name: Training pipeline end to end on a slice (baselines, variants, ONNX, int8, gate, MLflow registry)
+        run: mci train --quick --out ci-bundles --report ci-training.json
+      - uses: actions/upload-artifact@v4
+        with: {name: ci-training-report, path: ci-training.json}
+
+  kubernetes:
+    name: kind cluster (deploy, smoke test, load test, zero-downtime model rollout)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifests
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          for o in kind production; do kubectl kustomize deploy/k8s/overlays/$o | ./kubeconform -strict -summary -kubernetes-version 1.32.0 -; done
+      - run: docker build -t mci:ci . && docker image ls mci:ci
+      - uses: helm/kind-action@v1
+        with: {cluster_name: mci, config: deploy/kind/cluster.yaml}
+      - name: Deploy (Redis, API x2, learner)
+        run: |
+          kind load docker-image mci:ci --name mci
+          kubectl apply -k deploy/k8s/overlays/kind
+          kubectl -n mci rollout status statefulset/redis --timeout=180s
+          kubectl -n mci rollout status deployment/api --timeout=180s
+          kubectl -n mci rollout status deployment/learner --timeout=180s
+          kubectl -n mci get pods,svc,hpa,pdb
+      - uses: actions/setup-python@v5
+        with: {python-version: "${{ env.PYTHON_VERSION }}"}
+      - run: pip install -q httpx==0.28.1 numpy==2.5.3
+      - name: Smoke test through the Service (score, events → stream → learner, promotion)
+        run: python scripts/smoke.py --base http://localhost:30080
+      - name: Load test
+        run: python scripts/loadtest.py --base http://localhost:30080 --users 16 --seconds 20 --out loadtest-kind.json
+      - name: Model rollout under load drops no request (int8 → fp32 via the ConfigMap)
+        run: |
+          python scripts/loadtest.py --base http://localhost:30080 --users 8 --seconds 75 --rollout-check --out rollout.json &
+          LOAD=$!
+          sleep 10
+          (cd deploy/k8s/overlays/kind && kustomize edit add configmap mci-model --behavior=merge --from-literal=MCI_PRECISION=fp32) || \
+            sed -i 's/^patches:/configMapGenerator:\n  - {name: mci-model, behavior: merge, literals: [MCI_PRECISION=fp32]}\npatches:/' deploy/k8s/overlays/kind/kustomization.yaml
+          kubectl apply -k deploy/k8s/overlays/kind
+          kubectl -n mci rollout status deployment/api --timeout=180s
+          wait $LOAD
+          python -c "import json; r=json.load(open('rollout.json')); v=r['model_versions_served']; print(v); assert any(k.endswith('/int8') for k in v) and any(k.endswith('/fp32') for k in v), 'rollout not observed'"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: kind-reports, path: "*.json", if-no-files-found: ignore}
+      - if: failure()
+        run: |
+          kubectl -n mci get pods -o wide; kubectl -n mci describe pods | tail -n 80
+          kubectl -n mci logs deployment/api --tail 60; kubectl -n mci logs deployment/learner --tail 60

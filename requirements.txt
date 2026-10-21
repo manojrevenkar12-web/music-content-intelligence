@@ -1,0 +1,8 @@
+# serving image: the API and the learner (no PyTorch, no pandas)
+numpy==2.5.3
+onnxruntime==1.29.0
+fastapi==0.156.8
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+redis==6.4.0
+prometheus-client==0.26.0

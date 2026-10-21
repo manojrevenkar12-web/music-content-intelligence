@@ -1,0 +1,20 @@
+# CI: a local kind cluster, the image loaded with `kind load`, smaller requests to fit the runner.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: [../../base]
+images:
+  - name: ghcr.io/manojrevenkar12-web/music-content-intelligence
+    newName: mci
+    newTag: ci
+patches:
+  - target: {kind: Deployment, name: api}
+    patch: |
+      - {op: replace, path: /spec/template/spec/containers/0/resources/requests/cpu, value: 200m}
+      - {op: add, path: /spec/template/spec/containers/0/imagePullPolicy, value: Never}
+  - target: {kind: Deployment, name: learner}
+    patch: |
+      - {op: add, path: /spec/template/spec/containers/0/imagePullPolicy, value: Never}
+  - target: {kind: Service, name: api}
+    patch: |
+      - {op: add, path: /spec/type, value: NodePort}
+      - {op: add, path: /spec/ports/0/nodePort, value: 30080}

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "music-content-intelligence"
+version = "1.0.0"
+description = "Playlist matching and performance prediction for new music releases, with real-time learning from listening events"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{name = "Manoj Kumar Prakash"}]
+
+[project.scripts]
+mci = "mci.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mci = ["py.typed"]
+
+[tool.ruff]
+line-length = 160
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501", "B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

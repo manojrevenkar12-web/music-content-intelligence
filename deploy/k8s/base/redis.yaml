@@ -1,0 +1,41 @@
+# Event stream and online counters. One instance with AOF persistence is enough for the demo
+# cluster; production uses a managed Redis with a replica (see docs/ARCHITECTURE.md).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels: {app: redis}
+  template:
+    metadata:
+      labels: {app: redis}
+    spec:
+      securityContext: {runAsNonRoot: true, runAsUser: 999, fsGroup: 999, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: redis
+          image: redis:7.4-alpine
+          args: ["--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "200mb", "--maxmemory-policy", "noeviction"]
+          ports: [{containerPort: 6379, name: redis}]
+          readinessProbe: {exec: {command: ["redis-cli", "ping"]}, periodSeconds: 5}
+          livenessProbe: {exec: {command: ["redis-cli", "ping"]}, periodSeconds: 20, failureThreshold: 3}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          volumeMounts: [{name: data, mountPath: /data}]
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: {requests: {storage: 1Gi}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector: {app: redis}
+  ports: [{port: 6379, targetPort: redis, name: redis}]

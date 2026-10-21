@@ -1,0 +1,73 @@
+{
+  "version": "mci-20261021-1738",
+  "created": "2026-10-21T15:38:37+00:00",
+  "dataset_sha256": "9902920cfe4940f0914ebb6716801a42f7f19ac88fbd6693eaae7e2822b16845",
+  "history_until": "2019-09-30",
+  "snapshot": "2020-01-29",
+  "n_playlists": 471,
+  "vector_dim": 64,
+  "scale": 18.742938995361328,
+  "metrics": {
+    "playlist": {
+      "recall@10": 0.3396,
+      "mrr": 0.1842,
+      "mae": 11.381,
+      "spearman": 0.5494,
+      "hit_auc": 0.8153,
+      "epochs": 6,
+      "train_seconds": 135.0
+    },
+    "popularity": {
+      "mae": 10.459,
+      "spearman": 0.6327,
+      "hit_auc": 0.8607
+    }
+  },
+  "popularity_model": "lightgbm",
+  "mlflow_run_id": "c005ae3c8be8408b94a1a5e89e1e7f0a",
+  "variant": "text, pretrained fine-tuned",
+  "gate": {
+    "promote": true,
+    "checks": {
+      "playlist_recall_better": {
+        "ok": true,
+        "gain": 0.0469,
+        "ci95": [
+          0.0302,
+          0.0623
+        ]
+      },
+      "popularity_error_lower": {
+        "ok": true,
+        "gain": 3.004,
+        "ci95": [
+          2.706,
+          3.281
+        ]
+      },
+      "fast_enough": {
+        "ok": true,
+        "p99_ms": 1.64
+      }
+    },
+    "thresholds": {
+      "min_recall_gain": 0.0,
+      "min_mae_gain": 0.0,
+      "max_p99_ms": 50.0
+    },
+    "against": {
+      "playlist": "artist history + audio neighbours",
+      "popularity": "artist history (shrunk)"
+    }
+  },
+  "int8": {
+    "top10_overlap": 0.9604,
+    "recall@10_fp32": 0.3396,
+    "recall@10_int8": 0.3399,
+    "popularity_mean_abs_diff": 0.0,
+    "mae_fp32": 10.459,
+    "mae_int8": 10.459,
+    "bytes_fp32": 13276908,
+    "bytes_int8": 3342207
+  }
+}

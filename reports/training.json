@@ -1,0 +1,222 @@
+{
+  "dataset": {
+    "tracks": 28352,
+    "playlists": 471,
+    "train": 22991,
+    "valid": 1774,
+    "test": 3587,
+    "history_until": "2019-09-30",
+    "test_from": "2019-10-01",
+    "hit_threshold": 61.0
+  },
+  "baselines": {
+    "recency_half_life_days": 30,
+    "playlist": {
+      "recently active playlists": {
+        "recall@10": 0.0905,
+        "mrr": 0.0507
+      },
+      "audio neighbours (recency-weighted)": {
+        "recall@10": 0.1871,
+        "mrr": 0.0955
+      },
+      "artist history + audio neighbours": {
+        "recall@10": 0.2927,
+        "mrr": 0.2023
+      }
+    },
+    "popularity": {
+      "training mean": {
+        "mae": 15.738,
+        "spearman": NaN,
+        "hit_auc": 0.5
+      },
+      "artist history (shrunk)": {
+        "mae": 13.463,
+        "spearman": 0.4834,
+        "hit_auc": 0.7651
+      }
+    }
+  },
+  "playlist_candidates": {
+    "audio + context only": {
+      "valid": {
+        "recall@10": 0.3316,
+        "mrr": 0.1746,
+        "mae": 13.439,
+        "spearman": 0.5722,
+        "hit_auc": 0.8025
+      },
+      "test": {
+        "recall@10": 0.3169,
+        "mrr": 0.1568,
+        "mae": 15.876,
+        "spearman": 0.5292,
+        "hit_auc": 0.8029,
+        "epochs": 13,
+        "train_seconds": 35.3
+      }
+    },
+    "text, no pretrained vectors": {
+      "valid": {
+        "recall@10": 0.3417,
+        "mrr": 0.2006,
+        "mae": 13.322,
+        "spearman": 0.4871,
+        "hit_auc": 0.7717
+      },
+      "test": {
+        "recall@10": 0.3069,
+        "mrr": 0.174,
+        "mae": 11.591,
+        "spearman": 0.5551,
+        "hit_auc": 0.8192,
+        "epochs": 9,
+        "train_seconds": 108.9
+      }
+    },
+    "text, pretrained frozen": {
+      "valid": {
+        "recall@10": 0.3595,
+        "mrr": 0.1922,
+        "mae": 13.306,
+        "spearman": 0.4903,
+        "hit_auc": 0.7653
+      },
+      "test": {
+        "recall@10": 0.3474,
+        "mrr": 0.1884,
+        "mae": 12.114,
+        "spearman": 0.5612,
+        "hit_auc": 0.8167,
+        "epochs": 9,
+        "train_seconds": 172.3
+      }
+    },
+    "text, pretrained fine-tuned": {
+      "valid": {
+        "recall@10": 0.3606,
+        "mrr": 0.1895,
+        "mae": 13.287,
+        "spearman": 0.4597,
+        "hit_auc": 0.7537
+      },
+      "test": {
+        "recall@10": 0.3396,
+        "mrr": 0.1842,
+        "mae": 11.381,
+        "spearman": 0.5494,
+        "hit_auc": 0.8153,
+        "epochs": 6,
+        "train_seconds": 135.0
+      }
+    }
+  },
+  "popularity_candidates": {
+    "lightgbm": {
+      "valid": {
+        "mae": 11.93,
+        "spearman": 0.5727,
+        "hit_auc": 0.809
+      },
+      "test": {
+        "mae": 10.459,
+        "spearman": 0.6327,
+        "hit_auc": 0.8607
+      }
+    },
+    "neural-pop": {
+      "valid": {
+        "mae": 12.895,
+        "spearman": 0.5153,
+        "hit_auc": 0.7832
+      },
+      "test": {
+        "mae": 13.09,
+        "spearman": 0.4687,
+        "hit_auc": 0.7815
+      }
+    },
+    "ensemble": {
+      "valid": {
+        "mae": 12.181,
+        "spearman": 0.5611,
+        "hit_auc": 0.8055
+      },
+      "test": {
+        "mae": 11.016,
+        "spearman": 0.5845,
+        "hit_auc": 0.8378
+      }
+    }
+  },
+  "selected": {
+    "playlist": "text, pretrained fine-tuned",
+    "popularity": "lightgbm",
+    "selected_on": "validation quarter (2019-07-01 to 2019-09-30)"
+  },
+  "gate": {
+    "promote": true,
+    "checks": {
+      "playlist_recall_better": {
+        "ok": true,
+        "gain": 0.0469,
+        "ci95": [
+          0.0302,
+          0.0623
+        ]
+      },
+      "popularity_error_lower": {
+        "ok": true,
+        "gain": 3.004,
+        "ci95": [
+          2.706,
+          3.281
+        ]
+      },
+      "fast_enough": {
+        "ok": true,
+        "p99_ms": 1.64
+      }
+    },
+    "thresholds": {
+      "min_recall_gain": 0.0,
+      "min_mae_gain": 0.0,
+      "max_p99_ms": 50.0
+    },
+    "against": {
+      "playlist": "artist history + audio neighbours",
+      "popularity": "artist history (shrunk)"
+    }
+  },
+  "int8": {
+    "top10_overlap": 0.9604,
+    "recall@10_fp32": 0.3396,
+    "recall@10_int8": 0.3399,
+    "popularity_mean_abs_diff": 0.0,
+    "mae_fp32": 10.459,
+    "mae_int8": 10.459,
+    "bytes_fp32": 13276908,
+    "bytes_int8": 3342207
+  },
+  "bundle": {
+    "version": "mci-20261021-1738",
+    "p99_ms_single_request_int8": 1.64,
+    "bytes": {
+      "artists.json": 227427,
+      "drift_reference.json": 2102,
+      "featurizer.json": 297614,
+      "manifest.json": 743,
+      "model.int8.onnx": 3342207,
+      "model.onnx": 13276908,
+      "playlist_vectors.npy": 120704,
+      "playlists.json": 76069,
+      "popularity_lgbm.onnx": 652648
+    }
+  },
+  "registry": {
+    "model": "mci-track-model",
+    "version": 1,
+    "alias": "champion"
+  }
+}

@@ -1,0 +1,12 @@
+# training pipeline (mci train, mci simulate); CI installs torch from the CPU wheel index
+-r requirements.txt
+torch==2.14.1
+pandas==2.3.3
+scipy==1.18.1
+scikit-learn==1.9.1
+lightgbm==4.7.0
+onnx==1.23.2
+onnxmltools==1.16.0
+mlflow==3.17.2
+spacy==3.8.16
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl

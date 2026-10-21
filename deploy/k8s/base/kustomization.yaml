@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: mci
+labels:
+  - pairs: {app.kubernetes.io/part-of: music-content-intelligence}
+    includeSelectors: false
+resources:
+  - namespace.yaml
+  - redis.yaml
+  - api.yaml
+  - learner.yaml
+  - networkpolicy.yaml
+# The model is configuration: changing MCI_BUNDLE or MCI_PRECISION changes the ConfigMap's name
+# hash, which rolls the Deployments (maxUnavailable 0, readiness-gated), i.e. a model rollout.
+configMapGenerator:
+  - name: mci-model
+    literals:
+      - MCI_BUNDLE=/app/bundles/current
+      - MCI_PRECISION=int8
+      - MCI_MAX_BATCH=64
+      - MCI_BATCH_WAIT_MS=0
+      - REDIS_URL=redis://redis:6379/0
+images:
+  - name: mci
+    newName: ghcr.io/manojrevenkar12-web/music-content-intelligence
+    newTag: latest
